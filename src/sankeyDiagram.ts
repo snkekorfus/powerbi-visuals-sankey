@@ -55,6 +55,7 @@ import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
 import DataViewMatrixNode = powerbi.DataViewMatrixNode;
+import VisualEnumerationInstanceKinds = powerbi.VisualEnumerationInstanceKinds;
 // powerbi.visuals
 import ISelectionId = powerbi.visuals.ISelectionId;
 
@@ -367,9 +368,11 @@ export class SankeyDiagram implements IVisual {
     }
 
     private createNewNode(node: DataViewMatrixNode, settings: SankeyDiagramSettings): SankeyDiagramNode {
+        console.log(node);
+        console.log(settings);
         const nodeFillColor = this.getColor(
             SankeyDiagram.NodesPropertyIdentifier,
-            this.colorPalette.getColor(<string>node.value).value,
+            this.colorPalette.getColor(<string>node.value.toString().substring(0, node.value.toString().indexOf("."))).value,
             <any>node.objects);
         const nodeStrokeColor = this.colorHelper.getHighContrastColor("foreground", nodeFillColor);
 

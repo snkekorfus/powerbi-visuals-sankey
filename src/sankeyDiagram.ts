@@ -25,6 +25,7 @@
 */
 import "../style/visual.less";
 import powerbi from "powerbi-visuals-api";
+import { dataViewWildcard } from "powerbi-visuals-utils-dataviewutils";
 
 // lodash
 import lodashMaxBy from "lodash.maxby";
@@ -368,8 +369,6 @@ export class SankeyDiagram implements IVisual {
     }
 
     private createNewNode(node: DataViewMatrixNode, settings: SankeyDiagramSettings): SankeyDiagramNode {
-        console.log(node);
-        console.log(settings);
         const nodeFillColor = this.getColor(
             SankeyDiagram.NodesPropertyIdentifier,
             this.colorPalette.getColor(<string>node.value.toString().substring(0, node.value.toString().indexOf("."))).value,
@@ -2265,6 +2264,8 @@ export class SankeyDiagram implements IVisual {
 
     private enumerateNodeCategories(instanceEnumeration: VisualObjectInstanceEnumeration): void {
         const nodes: SankeyDiagramNode[] = this.dataView && this.dataView.nodes;
+        console.log("hier");
+        console.log(nodes);
 
         if (!nodes || !(nodes.length > 0)) {
             return;
@@ -2275,13 +2276,20 @@ export class SankeyDiagram implements IVisual {
         }).forEach((node: SankeyDiagramNode) => {
             const identity: ISelectionId = <ISelectionId>node.identity,
                 displayName: string = node.label.formattedName;
+            
             this.addAnInstanceToEnumeration(instanceEnumeration, {
                 displayName,
                 objectName: SankeyDiagram.NodesPropertyIdentifier.objectName,
-                selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
                 properties: {
                     fill: { solid: { color: node.fillColor } }
-                }
+                },
+                selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
+                //selector: dataViewWildcard.createDataViewWildcardSelector(dataViewWildcard.DataViewWildcardMatchingOption.InstancesAndTotals),
+                //altConstantValueSelector: ColorHelper.normalizeSelector(identity.getSelector(), false),
+                // List your conditional formatting properties
+                //propertyInstanceKind: {
+                //    fill: VisualEnumerationInstanceKinds.ConstantOrRule
+                //}
             });
         });
     }
@@ -2312,6 +2320,7 @@ export class SankeyDiagram implements IVisual {
         instanceEnumeration: VisualObjectInstanceEnumeration,
         instance: VisualObjectInstance): void {
 
+        console.log(instance);
         if ((<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances) {
             (<VisualObjectInstanceEnumerationObject>instanceEnumeration)
                 .instances

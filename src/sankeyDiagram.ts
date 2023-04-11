@@ -374,6 +374,8 @@ export class SankeyDiagram implements IVisual {
             this.colorPalette.getColor(<string>node.value.toString().substring(0, node.value.toString().indexOf("."))).value,
             <any>node.objects);
         const nodeStrokeColor = this.colorHelper.getHighContrastColor("foreground", nodeFillColor);
+        
+        //console.log(nodeStrokeColor);
 
         const name = <any>node.value;
 
@@ -449,11 +451,30 @@ export class SankeyDiagram implements IVisual {
             return source.roles.Weight;
         }).pop());
 
+        const colorIndex: number = valueSources.indexOf(valueSources.filter((column: powerbi.DataViewMetadataColumn) => {
+            return column.roles.NodeColor;
+        }).pop());
+
+
         const sourceFieldName = dataView.matrix.rows.levels[0].sources[0].displayName;
         const destinationFieldName = dataView.matrix.rows.levels[1].sources[0].displayName;
         const valueFieldName = dataView.matrix.valueSources[weightIndex] ? dataView.matrix.valueSources[weightIndex].displayName : null;
         const formatOfWeigth = valueFormatter.getFormatStringByColumn(valueSources[weightIndex]);
         const weightValues: number[] = [1];
+        
+        /* Tried to set colors for nodes by hand. Failed to get colors for raw zone (Lowest level in the Diagram). Stop development, too time consuming.
+        dataView.matrix.rows.root.children.forEach(parent => {
+            parent.children.forEach(child => {
+                console.log(child);
+                if (colorIndex != -1) {
+                    indexedArray[<string>child.value] = String(child.values[colorIndex].value);
+                }
+            })
+        })
+        
+
+        console.log(indexedArray);
+        */
 
         dataView.matrix.rows.root.children.forEach(parent => {
             const newSourceNode = this.createNewNode(parent, settings)
@@ -2264,9 +2285,6 @@ export class SankeyDiagram implements IVisual {
 
     private enumerateNodeCategories(instanceEnumeration: VisualObjectInstanceEnumeration): void {
         const nodes: SankeyDiagramNode[] = this.dataView && this.dataView.nodes;
-        console.log("hier");
-        console.log(nodes);
-
         if (!nodes || !(nodes.length > 0)) {
             return;
         }
@@ -2284,12 +2302,6 @@ export class SankeyDiagram implements IVisual {
                     fill: { solid: { color: node.fillColor } }
                 },
                 selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
-                //selector: dataViewWildcard.createDataViewWildcardSelector(dataViewWildcard.DataViewWildcardMatchingOption.InstancesAndTotals),
-                //altConstantValueSelector: ColorHelper.normalizeSelector(identity.getSelector(), false),
-                // List your conditional formatting properties
-                //propertyInstanceKind: {
-                //    fill: VisualEnumerationInstanceKinds.ConstantOrRule
-                //}
             });
         });
     }
@@ -2320,7 +2332,6 @@ export class SankeyDiagram implements IVisual {
         instanceEnumeration: VisualObjectInstanceEnumeration,
         instance: VisualObjectInstance): void {
 
-        console.log(instance);
         if ((<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances) {
             (<VisualObjectInstanceEnumerationObject>instanceEnumeration)
                 .instances

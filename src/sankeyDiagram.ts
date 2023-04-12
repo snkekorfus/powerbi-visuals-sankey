@@ -368,14 +368,29 @@ export class SankeyDiagram implements IVisual {
         this.main.attr("transform", translate(this.margin.left, this.margin.top));
     }
 
-    private createNewNode(node: DataViewMatrixNode, settings: SankeyDiagramSettings): SankeyDiagramNode {
-        const nodeFillColor = this.getColor(
-            SankeyDiagram.NodesPropertyIdentifier,
-            this.colorPalette.getColor(<string>node.value.toString().substring(0, node.value.toString().indexOf("."))).value,
-            <any>node.objects);
+    private getSystemColor(colorMap: Map<string, string>, systemName: string): string {
+        const key: string = [...colorMap.keys()].find(k => k.includes("rawzone."+systemName));
+        if(key === undefined){
+            return "#000000"
+        }
+        return colorMap.get(key);
+    }
+
+    private createNewNode(node: DataViewMatrixNode, settings: SankeyDiagramSettings, colorMap: Map<string, string> = undefined): SankeyDiagramNode {
+        let nodeFillColor: string = null;
+        if(colorMap !== undefined && colorMap !== null && colorMap.size !== 0) {
+            if(!(<string>node.value).startsWith('system')){
+                nodeFillColor = colorMap.get(<string>node.value);
+            } else {
+                nodeFillColor = this.getSystemColor(colorMap, (<string>node.value).split(".")[1]);
+            }
+        } else {
+            nodeFillColor = this.getColor(
+                SankeyDiagram.NodesPropertyIdentifier,
+                this.colorPalette.getColor(<string>node.value.toString().substring(0, node.value.toString().indexOf("."))).value,
+                <any>node.objects);
+        }
         const nodeStrokeColor = this.colorHelper.getHighContrastColor("foreground", nodeFillColor);
-        
-        //console.log(nodeStrokeColor);
 
         const name = <any>node.value;
 
@@ -455,29 +470,23 @@ export class SankeyDiagram implements IVisual {
             return column.roles.NodeColor;
         }).pop());
 
-
         const sourceFieldName = dataView.matrix.rows.levels[0].sources[0].displayName;
         const destinationFieldName = dataView.matrix.rows.levels[1].sources[0].displayName;
         const valueFieldName = dataView.matrix.valueSources[weightIndex] ? dataView.matrix.valueSources[weightIndex].displayName : null;
         const formatOfWeigth = valueFormatter.getFormatStringByColumn(valueSources[weightIndex]);
         const weightValues: number[] = [1];
         
-        /* Tried to set colors for nodes by hand. Failed to get colors for raw zone (Lowest level in the Diagram). Stop development, too time consuming.
+        let colorMap: Map<string, string> = new Map();
         dataView.matrix.rows.root.children.forEach(parent => {
             parent.children.forEach(child => {
-                console.log(child);
                 if (colorIndex != -1) {
-                    indexedArray[<string>child.value] = String(child.values[colorIndex].value);
+                    colorMap.set(<string>child.value, <string>child.values[colorIndex].value)
                 }
             })
         })
-        
-
-        console.log(indexedArray);
-        */
 
         dataView.matrix.rows.root.children.forEach(parent => {
-            const newSourceNode = this.createNewNode(parent, settings)
+            const newSourceNode = this.createNewNode(parent, settings, colorMap)
             newSourceNode.identity = this.visualHost.createSelectionIdBuilder()
                 .withMatrixNode(parent, dataView.matrix.rows.levels)
                 .createSelectionId();
@@ -493,7 +502,7 @@ export class SankeyDiagram implements IVisual {
 
                 let foundDestination: SankeyDiagramNode = nodes.find(found => found.label.name === child.value)
                 if (!foundDestination) {
-                    foundDestination = this.createNewNode(child, settings);
+                    foundDestination = this.createNewNode(child, settings, colorMap);
                     foundDestination.identity = this.visualHost.createSelectionIdBuilder()
                         .withMatrixNode(parent, dataView.matrix.rows.levels)
                         .withMatrixNode(child, dataView.matrix.rows.levels)

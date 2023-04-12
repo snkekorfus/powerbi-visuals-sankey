@@ -28,6 +28,12 @@
             "kind": "Measure",
             "displayName": "Source labels",
             "displayNameKey": "Visual_SourceLabels"
+        },
+        {
+            "name": "NodeColor",
+            "kind": "Measure",
+            "displayName": "Node Color",
+            "displayNameKey": "Visual_NodeColor"
         }
     ],
     "dataViewMappings": [
@@ -47,6 +53,10 @@
                         "max": 1
                     },
                     "Weight": {
+                        "min": 0,
+                        "max": 1
+                    },
+                    "NodeColor": {
                         "min": 0,
                         "max": 1
                     }
@@ -77,6 +87,11 @@
                         {
                             "for": {
                                 "in": "Weight"
+                            }
+                        },
+                        {
+                            "for": {
+                                "in": "NodeColor"
                             }
                         }
                     ]

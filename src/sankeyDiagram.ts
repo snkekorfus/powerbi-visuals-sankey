@@ -25,7 +25,6 @@
 */
 import "../style/visual.less";
 import powerbi from "powerbi-visuals-api";
-import { dataViewWildcard } from "powerbi-visuals-utils-dataviewutils";
 
 // lodash
 import lodashMaxBy from "lodash.maxby";
@@ -390,6 +389,7 @@ export class SankeyDiagram implements IVisual {
                 this.colorPalette.getColor(<string>node.value.toString().substring(0, node.value.toString().indexOf("."))).value,
                 <any>node.objects);
         }
+        console.log(nodeFillColor);
         const nodeStrokeColor = this.colorHelper.getHighContrastColor("foreground", nodeFillColor);
 
         const name = <any>node.value;
